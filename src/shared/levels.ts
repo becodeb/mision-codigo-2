@@ -13,35 +13,42 @@ export interface LevelInfo {
   teamName: string;
   /** What the level covers, for teachers. */
   teacherDescription: string;
+  /** School grade a child picks this level by, on the entry screen. */
+  grade: string;
 }
 
 export const LEVELS: readonly LevelInfo[] = [
   {
     id: 1,
     teamName: 'Equipo Sol',
+    grade: '1.er grado',
     teacherDescription: 'Secuencia: ordenar bloques con imágenes para contar una historia paso a paso.',
   },
   {
     id: 2,
     teamName: 'Equipo Mar',
+    grade: '2.º grado',
     teacherDescription:
       'Eventos, tiempos y repetir: varios personajes que se activan con toques y mensajes de colores.',
   },
   {
     id: 3,
     teamName: 'Equipo Bosque',
+    grade: '3.er grado',
     teacherDescription:
       'Teclado, coordenadas, mensajes y contacto entre personajes con bloques de texto, sin condicionales. Por ejemplo, puntos y fases por mensajes.',
   },
   {
     id: 4,
     teamName: 'Equipo Volcán',
+    grade: '4.º grado',
     teacherDescription:
       'Bucle y reglas: por siempre, si toca, puntos, ganar y perder. Juegos de esquivar y atrapar.',
   },
   {
     id: 5,
     teamName: 'Equipo Galaxia',
+    grade: '5.º y 6.º grado',
     teacherDescription:
       'Estado: variables, comparaciones, si/si no, azar, clones y listas. Vidas, tiempo y niveles de dificultad.',
   },
@@ -58,6 +65,9 @@ export function isClassId(value: unknown): value is ClassId {
 export function getLevel(id: LevelId): LevelInfo {
   return LEVELS[id - 1];
 }
+
+/** Group a child who enters by level is filed under, so the teacher sees the grade. */
+export const levelGroup = (id: LevelId): string => `Nivel ${id}`;
 
 export function teamName(id: LevelId): string {
   return getLevel(id).teamName;

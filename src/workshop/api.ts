@@ -9,11 +9,13 @@ import type {
   SessionResponse,
   StudentsResponse,
 } from '../shared/api.ts';
+import type { LevelId } from '../shared/levels.ts';
 
 const projectPath = (gameId: string) => `/api/projects/${encodeURIComponent(gameId)}`;
 
 export const listStudents = () => get<StudentsResponse>('/api/students');
 export const startSession = (studentId: number) => send<SessionResponse>('POST', '/api/session', { studentId });
+export const joinSession = (level: LevelId, name: string) => send<SessionResponse>('POST', '/api/join', { level, name });
 export const getSession = () => get<SessionResponse>('/api/session');
 export const endSession = () => send<OkResponse>('DELETE', '/api/session');
 export const listProjects = () => get<ProjectsResponse>('/api/projects');

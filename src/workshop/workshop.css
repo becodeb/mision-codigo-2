@@ -414,3 +414,65 @@
     font-size: 24px;
   }
 }
+
+/* ---------- Level screen (Misión Código 2) ---------- */
+.l-levels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.l-level {
+  width: 100%;
+  min-height: 170px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  padding: 16px 10px;
+  border: 4px solid var(--ink);
+  border-radius: 28px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
+  cursor: pointer;
+}
+
+.l-level:active {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.l-num {
+  font: 800 clamp(64px, 10vw, 96px)/1 var(--font-display);
+}
+
+.l-grade {
+  font: 700 20px/1.15 var(--font-display);
+  text-align: center;
+}
+
+.l-level-1 { background: #ffe7a3; }
+.l-level-2 { background: #bfe6ff; }
+.l-level-3 { background: #c8f0c0; }
+.l-level-4 { background: #ffc9b0; }
+.l-level-5 { background: #ddd0ff; }
+
+.l-badge {
+  width: 84px;
+  height: 84px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 4px solid var(--ink);
+  border-radius: 24px;
+  font: 800 52px/1 var(--font-display);
+  color: var(--ink);
+}
+
+.l-hint {
+  font-size: 17px;
+}

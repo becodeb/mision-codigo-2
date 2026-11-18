@@ -105,7 +105,7 @@ export function TeacherApp() {
     <div className="t-app">
       <header className="t-top">
         <div className="t-brand">
-          <strong>Misión Código</strong>
+          <strong>Misión Código 2</strong>
           <span className="t-muted">Panel docente</span>
         </div>
         <div aria-label="Secciones" className="t-tabs" role="tablist">

@@ -29,7 +29,7 @@ export function Login({ loginEnabled, notice, onSubmit }: Props) {
     <main className="t-login">
       <form className="t-login-card" onSubmit={submit}>
         <h1>Panel docente</h1>
-        <p className="t-muted">Misión Código</p>
+        <p className="t-muted">Misión Código 2</p>
 
         {!loginEnabled && (
           <p className="t-alert" role="alert">

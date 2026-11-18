@@ -23,7 +23,7 @@ const server = app.listen(config.port, config.host, () => {
   const address = server.address();
   const port = typeof address === 'object' && address ? address.port : config.port;
   console.log(
-    `Misión Código listening on http://${config.host}:${port} (${config.staticDir ? 'serving dist/' : 'API only'})`,
+    `Misión Código 2 listening on http://${config.host}:${port} (${config.staticDir ? 'serving dist/' : 'API only'})`,
   );
 });
 

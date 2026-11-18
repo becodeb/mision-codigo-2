@@ -24,7 +24,7 @@ import type {
 } from '../shared/api.ts';
 import { GAME_ID_PATTERN, MAX_BODY_BYTES } from '../shared/api.ts';
 import { KNOWN_GAME_IDS } from '../shared/gameIds.ts';
-import type { ClassId, LevelId } from '../shared/levels.ts';
+import { levelGroup, type ClassId, type LevelId } from '../shared/levels.ts';
 import { createAuth } from './auth.ts';
 import type { AppConfig } from './config.ts';
 import { createStore } from './db.ts';
@@ -48,6 +48,9 @@ const nameSchema = z.string().trim().min(1).max(60).refine(noControlChars);
 const groupSchema = z.string().trim().max(40).refine(noControlChars);
 
 const sessionBody = z.object({ studentId: z.number().int().positive() });
+const joinBody = z.object({ level: levelSchema, name: nameSchema.transform((s) => s.replace(/\s+/g, ' ')) });
+/** Children create themselves by typing a name: a cap keeps a runaway script from filling the disk. */
+const MAX_STUDENTS = 5000;
 const progressSchema = z.object({
   currentStep: z.string().max(80).nullable(),
   completedSteps: z.array(z.object({ id: z.string().max(80), at: z.string().max(40) })).max(500),
@@ -137,6 +140,23 @@ export function createApp({ db, config, now = Date.now }: AppDeps) {
     const { studentId } = parse(sessionBody, req.body);
     const student = store.getStudent(studentId);
     if (!student) throw new AppError(404, 'student_not_found', 'No encontramos ese nombre.');
+    auth.issueChild(res, student.id);
+    res.json(sessionResponse(student));
+  });
+
+  // Enter by level and name: the same name in the same level is the same child, so a child who
+  // comes back finds their projects. Two children with the same name add their last initial.
+  api.post('/join', (req, res) => {
+    const { level, name } = parse(joinBody, req.body);
+    const group = levelGroup(level);
+    const student = store.transaction(() => {
+      const found = store.findStudent(name, group);
+      if (found) return found;
+      if (store.listStudents().length >= MAX_STUDENTS) {
+        throw new AppError(503, 'too_many_students', 'No se pueden sumar más chicos. Avisale a tu profe.');
+      }
+      return store.createStudent({ name, group, level });
+    });
     auth.issueChild(res, student.id);
     res.json(sessionResponse(student));
   });

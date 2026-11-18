@@ -3,14 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { buildChooser } from './chooser.ts';
 import type { Chooser as ChooserModel } from './chooser.ts';
 import { ApiError } from '../net/http.ts';
-import type { SessionResponse, StudentListItem } from '../shared/api.ts';
-import { endSession, getSession, listProjects, listStudents, saveProject, saveProjectKeepalive, startSession } from './api.ts';
+import type { SessionResponse } from '../shared/api.ts';
+import type { LevelId } from '../shared/levels.ts';
+import { endSession, getSession, joinSession, listProjects, saveProject, saveProjectKeepalive } from './api.ts';
 import { createAutosave, createAutosaveRegistry, localKey } from './autosave.ts';
 import { Boundary } from './Boundary.tsx';
 import { Chooser } from './Chooser.tsx';
-import { sameSession, sameStudents } from './live.ts';
-import { NameScreen } from './NameScreen.tsx';
-import type { NamesState } from './NameScreen.tsx';
+import { sameSession } from './live.ts';
+import { LevelScreen } from './LevelScreen.tsx';
 import { StudioHost } from './StudioHost.tsx';
 import { usePolling } from './usePolling.ts';
 
@@ -24,53 +24,18 @@ function browserStorage(): Storage | null {
 
 const NETWORK_HINT = 'No hay conexión con el servidor.';
 
-function NamesContainer({ onSession }: { onSession: (session: SessionResponse) => void }) {
-  const [state, setState] = useState<NamesState>({ kind: 'loading' });
-  const [pendingId, setPendingId] = useState<number | null>(null);
+function JoinContainer({ onSession }: { onSession: (session: SessionResponse) => void }) {
+  const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
-  const stateKind = useRef(state.kind);
-  stateKind.current = state.kind;
-  const alive = useRef(true);
-  useEffect(() => {
-    alive.current = true;
-    return () => {
-      alive.current = false;
-    };
-  }, []);
 
-  // A child added by the teacher shows up here without a reload. Only a changed list touches the
-  // state, so what a child has typed in the search box is never cleared.
-  usePolling(async () => {
-    if (stateKind.current === 'loading') return;
-    const { students } = await listStudents();
-    if (!alive.current) return;
-    setState((current) =>
-      current.kind === 'ready' && sameStudents(current.students, students) ? current : { kind: 'ready', students },
-    );
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-    setState({ kind: 'loading' });
-    listStudents()
-      .then(({ students }) => !cancelled && setState({ kind: 'ready', students }))
-      .catch((error: unknown) => {
-        if (!cancelled) setState({ kind: 'error', message: error instanceof ApiError && !error.isNetwork ? error.message : NETWORK_HINT });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [attempt]);
-
-  const pick = useCallback(
-    (student: StudentListItem) => {
-      setPendingId(student.id);
+  const enter = useCallback(
+    (level: LevelId, name: string) => {
+      setBusy(true);
       setProblem(null);
-      startSession(student.id)
+      joinSession(level, name)
         .then(onSession)
         .catch((error: unknown) => {
-          setPendingId(null);
+          setBusy(false);
           setProblem(
             error instanceof ApiError && !error.isNetwork
               ? error.message
@@ -81,9 +46,7 @@ function NamesContainer({ onSession }: { onSession: (session: SessionResponse) =
     [onSession],
   );
 
-  return (
-    <NameScreen state={state} pendingId={pendingId} problem={problem} onPick={pick} onRetry={() => setAttempt((n) => n + 1)} />
-  );
+  return <LevelScreen busy={busy} problem={problem} onEnter={enter} />;
 }
 
 interface SignedInProps {
@@ -308,6 +271,6 @@ export function WorkshopApp() {
       </main>
     );
   }
-  if (boot.kind === 'names') return <NamesContainer onSession={toSession} />;
+  if (boot.kind === 'names') return <JoinContainer onSession={toSession} />;
   return <SignedIn key={boot.session.student.id} session={boot.session} onSignedOut={toNames} />;
 }
